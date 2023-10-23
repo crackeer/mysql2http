@@ -14,6 +14,11 @@ func ({{table_struct_name}}) TableName() string {
     return "{{table}}"
 }
 
+func Query{{table_struct_name}}(ctx *gin.Context) {
+    input := &define.QueryRequest{}
+    ctx.BindJSON(input)
+}
+
 func Query(db *gorm.DB, query map[string]interface{}, limit int64) ([]{{table_struct_name}}, error) {
     list := []{{table_struct_name}}{}
     err := db.Model(&{{table_struct_name}}{}).Where(query).Limit(int(limit)).Find(&list).Error
