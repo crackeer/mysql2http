@@ -39,7 +39,7 @@ func Query{{table_struct_name}}(ctx *gin.Context) {
         "page" : input.Page,
         "page_size" : input.PageSize,
         "total" : util.TotalPage(total, input.PageSize),
-        "total_page" : input.TotalSize
+        "total_page" : input.TotalSize,
     })
 }
 
