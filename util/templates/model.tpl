@@ -7,7 +7,6 @@ import (
     {% if include_time %}
         "mysql2http/define"
     {% endif %}
-     
 )
 
 
@@ -26,6 +25,9 @@ func Query{{table_struct_name}}(ctx *gin.Context) {
     if err := ctx.BindJSON(input); err != nil {
         util.Fail(ctx, err.Error())
         return
+    }
+    if input.PageSize < 1 {
+        input.PageSize = 10
     }
     sql, values := util.BuildQuery(input.Query)
     var (
