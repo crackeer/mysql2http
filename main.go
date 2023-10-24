@@ -27,6 +27,7 @@ func main() {
 			"tables":   database.GenMainRouterInput(),
 		})
 	}
+	generator.GenSomeFile()
 	generator.GenMainGOFile(mainData)
 
 }

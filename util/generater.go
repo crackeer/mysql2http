@@ -83,3 +83,19 @@ func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}) error {
 	}
 	return nil
 }
+
+func (g *GoFileGenerator) GenSomeFile() error {
+	bytes, _ := Render("define.tpl", map[string]interface{}{})
+	if err := g.write(filepath.Join("define/request.go"), bytes); err != nil {
+		return fmt.Errorf("generate define/request.go error %v", err)
+	}
+	bytes, _ = Render("util.tpl", map[string]interface{}{})
+	if err := g.write(filepath.Join("util/util.go"), bytes); err != nil {
+		return fmt.Errorf("generate define/request.go error %v", err)
+	}
+	bytes, _ = Render("go_mod.tpl", map[string]interface{}{})
+	if err := g.write(filepath.Join("go.mod"), bytes); err != nil {
+		return fmt.Errorf("generate define/request.go error %v", err)
+	}
+	return nil
+}

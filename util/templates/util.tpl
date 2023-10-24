@@ -3,6 +3,7 @@ package util
 import (
     "strings"
     "fmt"
+	"github.com/gin-gonic/gin"
 )
 
 func Fail(ctx *gin.Context, message string) {
@@ -10,7 +11,7 @@ func Fail(ctx *gin.Context, message string) {
 }
 
 
-func Success(ctx *gin.Context, data interface{})) {
+func Success(ctx *gin.Context, data interface{}) {
 
 }
 

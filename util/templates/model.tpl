@@ -1,8 +1,10 @@
 package {{database}}
 
 import (
-    "gorm.io/gorm"
     "mysql2http/util"
+    "time"
+    "github.com/gin-gonic/gin"
+    "mysql2http/define"
 )
 
 
@@ -19,7 +21,7 @@ func ({{table_struct_name}}) TableName() string {
 func Query{{table_struct_name}}(ctx *gin.Context) {
     input := &define.QueryRequest{}
     if err := ctx.BindJSON(input); err != nil {
-        util.Fail(ctx, err)
+        util.Fail(ctx, err.Error())
         return
     }
     sql, values := util.BuildQuery(input.Query)
@@ -29,7 +31,7 @@ func Query{{table_struct_name}}(ctx *gin.Context) {
     )
     err := globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Offset(int(util.Offset(input.Page, input.PageSize))).Limit(int(input.PageSize)).Find(&list).Error
     if err != nil {
-        util.Fail(ctx, err)
+        util.Fail(ctx, err.Error())
         return
     }
     globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Count(&total)
@@ -38,19 +40,19 @@ func Query{{table_struct_name}}(ctx *gin.Context) {
         "list" : list,
         "page" : input.Page,
         "page_size" : input.PageSize,
-        "total" : util.TotalPage(total, input.PageSize),
-        "total_page" : input.TotalSize,
+        "total" : total,
+        "total_page" : util.TotalPage(total, input.PageSize),
     })
 }
 
-func Create{{table_struct_name}}(ctx *gin.Context, query map[string]interface{}, limit int64) ([]{{table_struct_name}}, error) {
+func Create{{table_struct_name}}(ctx *gin.Context)  {
     input := &{{table_struct_name}}{}
     if err := ctx.BindJSON(input); err != nil {
-        util.Fail(ctx, err)
+        util.Fail(ctx, err.Error())
         return
     }
-    if err := db.Create(input).Error; err != nil {
-        util.Fail(ctx, err)
+    if err := globalDB.Create(input).Error; err != nil {
+        util.Fail(ctx,  err.Error())
         return
     }
     util.Success(ctx, input)
