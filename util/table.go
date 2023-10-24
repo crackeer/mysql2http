@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gookit/goutil/strutil"
@@ -48,10 +49,6 @@ func (db *Database) Initialize() error {
 	return nil
 }
 
-func (db *Database) Close() error {
-	return db.Close()
-}
-
 // Tables
 //
 //	@param db
@@ -93,11 +90,13 @@ func (db *Database) Desc(table string) ([]TableField, error) {
 func (db *Database) BatchGenModelInput() map[string]map[string]interface{} {
 	tables := map[string]map[string]interface{}{}
 	for table, fields := range db.TableField {
+		fmt.Println(table, includeDateTime(fields))
 		tables[table] = map[string]interface{}{
 			"database":          db.Name,
 			"table":             table,
 			"table_struct_name": strutil.UpperFirst(strutil.Camel(table)),
 			"fields":            convertFields(fields),
+			"include_time":      includeDateTime(fields),
 		}
 	}
 	return tables
@@ -117,7 +116,7 @@ func (db *Database) GenMainRouterInput() []map[string]interface{} {
 var typeTypeMapping map[string]string = map[string]string{
 	"int":      "int64",
 	"varchar":  "string",
-	"datetime": "time.Time",
+	"datetime": "define.LocalTime",
 }
 
 func getDataType(sqlType string) string {
@@ -139,4 +138,13 @@ func convertFields(fields []TableField) []map[string]interface{} {
 		})
 	}
 	return retData
+}
+
+func includeDateTime(fields []TableField) bool {
+	for _, item := range fields {
+		if getDataType(item.Type) == "time.Time" {
+			return true
+		}
+	}
+	return false
 }

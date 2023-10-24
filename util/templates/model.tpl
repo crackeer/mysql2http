@@ -2,9 +2,12 @@ package {{database}}
 
 import (
     "mysql2http/util"
-    "time"
     "github.com/gin-gonic/gin"
     "mysql2http/define"
+    {% if include_time %}
+        "mysql2http/define"
+    {% endif %}
+     
 )
 
 
