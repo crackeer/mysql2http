@@ -1,10 +1,12 @@
-package util
+package generator
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/crackeer/mysql2http/template"
 )
 
 // GoFileGenerator
@@ -47,17 +49,15 @@ func (g *GoFileGenerator) write(file string, data []byte) error {
 //	@return error
 func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[string]map[string]interface{}) error {
 	for table, data := range tableFields {
-		bytes, _ := json.Marshal(data)
-		fmt.Println(string(bytes))
-		bytes, err := Render("model.tpl", data)
+		bytes, err := template.Render("database/table.tpl", data)
 		if err != nil {
-			return fmt.Errorf("render template model.tpl error: %v, database = %v | table = %s", err, dbName, table)
+			return fmt.Errorf("render template table.tpl error: %v, database = %v | table = %s", err, dbName, table)
 		}
 		if err := g.write(filepath.Join("database", dbName, table+".go"), bytes); err != nil {
 			return fmt.Errorf("generate table router %v error %v", table, err)
 		}
 	}
-	bytes, err := Render("database.tpl", map[string]interface{}{
+	bytes, err := template.Render("database/db.tpl", map[string]interface{}{
 		"dsn":      dsn,
 		"database": dbName,
 	})
@@ -72,7 +72,7 @@ func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[str
 }
 
 func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}) error {
-	bytes, err := Render("main.tpl", map[string]interface{}{
+	bytes, err := template.Render("main.tpl", map[string]interface{}{
 		"databases": list,
 	})
 	if err != nil {
@@ -84,22 +84,24 @@ func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}) error {
 	return nil
 }
 
-func (g *GoFileGenerator) GenSomeFile() error {
-	bytes, _ := Render("request.tpl", map[string]interface{}{})
-	if err := g.write(filepath.Join("define/request.go"), bytes); err != nil {
-		return fmt.Errorf("generate define/request.go error %v", err)
+func (g *GoFileGenerator) CopySomeFiles() error {
+	allFiles := template.ReadAllFileList()
+	fmt.Println(allFiles)
+	for _, item := range allFiles {
+		if strings.HasSuffix(item, ".go") || strings.HasSuffix(item, ".mod") {
+			bytes, err := template.Read(item)
+			if err != nil {
+				continue
+			}
+			if err := g.write(item, bytes); err != nil {
+				return fmt.Errorf("copy `%s` error %v", item, err)
+			}
+		}
 	}
-	bytes, _ = Render("local_time.tpl", map[string]interface{}{})
-	if err := g.write(filepath.Join("define/local_time.go"), bytes); err != nil {
-		return fmt.Errorf("generate define/local_time.go error %v", err)
-	}
-	bytes, _ = Render("util.tpl", map[string]interface{}{})
-	if err := g.write(filepath.Join("util/util.go"), bytes); err != nil {
-		return fmt.Errorf("generate define/request.go error %v", err)
-	}
-	bytes, _ = Render("go_mod.tpl", map[string]interface{}{})
-	if err := g.write(filepath.Join("go.mod"), bytes); err != nil {
-		return fmt.Errorf("generate define/request.go error %v", err)
+	if bytes, err := template.Read("go_mod.tpl"); err == nil {
+		if err := g.write("go.mod", bytes); err != nil {
+			return fmt.Errorf("copy go_mod.tpl error %v", err)
+		}
 	}
 	return nil
 }

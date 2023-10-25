@@ -1,29 +1,9 @@
 package util
 
 import (
-    "strings"
-    "fmt"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"fmt"
+	"strings"
 )
-
-func Fail(ctx *gin.Context, message string) {
-	ctx.PureJSON(http.StatusOK, map[string]interface{}{
-		"error": message,
-		"data" : nil,
-	})
-	ctx.Abort()
-}
-
-
-func Success(ctx *gin.Context, data interface{}) {
-	ctx.PureJSON(http.StatusOK, map[string]interface{}{
-		"error": nil,
-		"data" : data,
-	})
-	ctx.Abort()
-}
-
 
 // BuildQuery
 //
@@ -69,21 +49,19 @@ func BuildQuery(query map[string]interface{}) (string, []interface{}) {
 		}
 	}
 	return strings.Join(queryConditions, " and "), params
-} 
-
+}
 
 func Offset(page, pageSize int64) int64 {
-    if page < 1 {
-        return 0
-    }
+	if page < 1 {
+		return 0
+	}
 
-    return (page - 1) * pageSize
+	return (page - 1) * pageSize
 }
 
 func TotalPage(total, pageSize int64) int64 {
-    if total % pageSize > 0 {
-        return total / pageSize + 1
-    }
-    return total / pageSize
+	if total%pageSize > 0 {
+		return total/pageSize + 1
+	}
+	return total / pageSize
 }
-

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/crackeer/mysql2http/util"
+	"github.com/crackeer/mysql2http/database"
+	"github.com/crackeer/mysql2http/generator"
 )
 
 var databases map[string]string = map[string]string{
@@ -9,13 +10,13 @@ var databases map[string]string = map[string]string{
 }
 
 func main() {
-	generator, err := util.NewGoFileGenerator("./tmp")
+	generator, err := generator.NewGoFileGenerator("./tmp")
 	if err != nil {
 		panic(err.Error())
 	}
 	mainData := []map[string]interface{}{}
 	for name, dsn := range databases {
-		database, _ := util.NewDatabase(name, dsn)
+		database, _ := database.NewDatabase(name, dsn)
 		if err := database.Initialize(); err != nil {
 			panic(err.Error())
 		}
@@ -27,7 +28,7 @@ func main() {
 			"tables":   database.GenMainRouterInput(),
 		})
 	}
-	generator.GenSomeFile()
+	generator.CopySomeFiles()
 	generator.GenMainGOFile(mainData)
 
 }
