@@ -62,3 +62,29 @@ func Create{{table_struct_name}}(ctx *gin.Context)  {
     }
     util.Success(ctx, input)
 }
+
+func Modify{{table_struct_name}}(ctx *gin.Context)  {
+    input := &define.QueryRequest{}
+    if err := ctx.BindJSON(input); err != nil {
+        util.Fail(ctx, err.Error())
+        return
+    }
+    sql, values := util.BuildQuery(input.Query)
+    count := globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Updates(input.Modify).RowsAffected
+    util.Success(ctx, map[string]interface{}{
+        "affected_rows" : count,
+    })
+}
+
+func Delete{{table_struct_name}}(ctx *gin.Context)  {
+    input := &define.QueryRequest{}
+    if err := ctx.BindJSON(input); err != nil {
+        util.Fail(ctx, err.Error())
+        return
+    }
+    sql, values := util.BuildQuery(input.Query)
+    count := globalDB.Where(sql, values...).Delete(&{{table_struct_name}}{}).RowsAffected
+    util.Success(ctx, map[string]interface{}{
+        "affected_rows" : count,
+    })
+}
