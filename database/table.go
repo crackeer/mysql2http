@@ -115,7 +115,7 @@ func (db *Database) GenMainRouterInput() []map[string]interface{} {
 
 var typeTypeMapping map[string]string = map[string]string{
 	"int":      "int64",
-	"varchar":  "string",
+	"float":    "float64",
 	"datetime": "define.LocalTime",
 }
 

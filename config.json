@@ -1,0 +1,10 @@
+{
+    "debug": true,
+    "database" : [
+        {
+            "name": "mysql2http",
+            "dsn" : "root:1234567@tcp(127.0.0.1:3306)/mysql2http?charset=utf8&parseTime=True&loc=Local"
+        }
+    ],
+    "code_folder" : "./tmp_code_folder"
+}
