@@ -127,3 +127,43 @@ func ParseDeleteRequest(ctx *gin.Context) (map[string]interface{}, error) {
 func ParseCreateRequest(ctx *gin.Context, dest interface{}) error {
 	return ctx.ShouldBindJSON(&dest)
 }
+
+// WildQuerySetting ...
+type WildQuerySetting struct {
+	Offset  int64    `json:"offset"`
+	Limit   int64    `json:"limit"`
+	Fields  []string `json:"fields"`
+	GroupBy string   `json:"group_by"`
+}
+
+type WildQueryRequestSetting struct {
+	Setting *WildQuerySetting `json:"_setting"`
+}
+
+// ParseQueryRequest
+//
+//	@param ctx
+//	@return map[string]interface{}
+//	@return *QuerySetting
+//	@return error
+func ParseWildQueryRequest(ctx *gin.Context) (map[string]interface{}, *WildQuerySetting, error) {
+	var (
+		queryMap     map[string]interface{}   = make(map[string]interface{})
+		querySetting *WildQueryRequestSetting = &WildQueryRequestSetting{}
+	)
+	bytes, err := ctx.GetRawData()
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := json.Unmarshal(bytes, &queryMap); err != nil {
+		return nil, nil, err
+	}
+
+	if err := json.Unmarshal(bytes, querySetting); err != nil {
+		return nil, nil, err
+	}
+
+	delete(queryMap, "_setting")
+
+	return queryMap, querySetting.Setting, nil
+}
