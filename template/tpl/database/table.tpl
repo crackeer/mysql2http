@@ -3,7 +3,6 @@ package {{database}}
 import (
     "mysql2http/util"
     "github.com/gin-gonic/gin"
-    "mysql2http/define"
     {% if include_time %}
         "mysql2http/define"
     {% endif %}
@@ -21,38 +20,32 @@ func ({{table_struct_name}}) TableName() string {
 }
 
 func Query{{table_struct_name}}(ctx *gin.Context) {
-    input := &define.QueryRequest{}
-    if err := ctx.BindJSON(input); err != nil {
-        util.Fail(ctx, err.Error())
-        return
-    }
-    if input.PageSize < 1 {
-        input.PageSize = 10
-    }
-    sql, values := util.BuildQuery(input.Query)
-    var (
-        list []{{table_struct_name}}
-        total int64
-    )
-    err := globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Offset(int(util.Offset(input.Page, input.PageSize))).Limit(int(input.PageSize)).Find(&list).Error
+    query, setting, err := util.ParseQueryRequest(ctx)
     if err != nil {
         util.Fail(ctx, err.Error())
         return
     }
-    globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Count(&total)
+    sql, values := util.BuildQuery(query)
+    db := globalDB.Table("{{table}}").Where(sql, values...)
+    if len(setting.Fields) > 0 {
+        db = db.Select(setting.Fields)
+    }
+    if len(setting.OrderBy) > 0 {
+        db = db.Order(setting.OrderBy)
+    }
+    list := []{{table_struct_name}}{}
+    err = db.Limit(int(setting.Limit)).Find(&list).Error
+    if err != nil {
+        util.Fail(ctx, err.Error())
+        return
+    }
 
-    util.Success(ctx, map[string]interface{}{
-        "list" : list,
-        "page" : input.Page,
-        "page_size" : input.PageSize,
-        "total" : total,
-        "total_page" : util.TotalPage(total, input.PageSize),
-    })
+    util.Success(ctx, list)
 }
 
 func Create{{table_struct_name}}(ctx *gin.Context)  {
     input := &{{table_struct_name}}{}
-    if err := ctx.BindJSON(input); err != nil {
+    if err := util.ParseCreateRequest(ctx, input); err != nil {
         util.Fail(ctx, err.Error())
         return
     }
@@ -64,39 +57,33 @@ func Create{{table_struct_name}}(ctx *gin.Context)  {
 }
 
 func Modify{{table_struct_name}}(ctx *gin.Context)  {
-    input := &define.QueryRequest{}
-    if err := ctx.BindJSON(input); err != nil {
+    updateData, setting, err := util.ParseModifyRequest(ctx); 
+    if err != nil {
         util.Fail(ctx, err.Error())
         return
     }
-    sql, values := util.BuildQuery(input.Query)
-    count := globalDB.Model(&{{table_struct_name}}{}).Where(sql, values...).Updates(input.Modify).RowsAffected
-    util.Success(ctx, map[string]interface{}{
-        "affected_rows" : count,
-    })
+    if len(setting.Where) < 1 {
+        util.Fail(ctx, "no where condition")
+        return
+    }
+    result := globalDB.Model(&{{table_struct_name}}{}).Where(setting.Where).Updates(updateData)
+    if result.Error != nil {
+        util.Fail(ctx, result.Error.Error())
+    } else {
+        util.Success(ctx, map[string]interface{}{
+            "affected_rows" : result.RowsAffected,
+        })
+    }    
 }
 
-func Delete{{table_struct_name}}(ctx *gin.Context)  {
-    input := &define.QueryRequest{}
-    if err := ctx.BindJSON(input); err != nil {
-        util.Fail(ctx, err.Error())
-        return
-    }
-    sql, values := util.BuildQuery(input.Query)
-    count := globalDB.Where(sql, values...).Delete(&{{table_struct_name}}{}).RowsAffected
-    util.Success(ctx, map[string]interface{}{
-        "affected_rows" : count,
-    })
-}
 
 func Delete{{table_struct_name}}(ctx *gin.Context)  {
-    input := &define.QueryRequest{}
-    if err := ctx.BindJSON(input); err != nil {
+    query, err := util.ParseDeleteRequest(ctx); 
+    if err != nil {
         util.Fail(ctx, err.Error())
         return
     }
-    sql, values := util.BuildQuery(input.Query)
-    count := globalDB.Where(sql, values...).Delete(&{{table_struct_name}}{}).RowsAffected
+    count := globalDB.Where(query).Delete(&{{table_struct_name}}{}).RowsAffected
     util.Success(ctx, map[string]interface{}{
         "affected_rows" : count,
     })

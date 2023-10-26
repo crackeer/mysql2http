@@ -142,7 +142,7 @@ func convertFields(fields []TableField) []map[string]interface{} {
 
 func includeDateTime(fields []TableField) bool {
 	for _, item := range fields {
-		if getDataType(item.Type) == "time.Time" {
+		if getDataType(item.Type) == "define.LocalTime" {
 			return true
 		}
 	}
