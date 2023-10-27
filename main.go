@@ -43,6 +43,8 @@ func main() {
 		panic(err)
 	}
 
+	os.RemoveAll(cnf.CodeFolder)
+
 	generator, err := generator.NewGoFileGenerator(cnf.CodeFolder)
 	if err != nil {
 		panic(err.Error())

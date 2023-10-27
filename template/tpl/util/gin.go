@@ -102,8 +102,8 @@ func ParseModifyRequest(ctx *gin.Context) (map[string]interface{}, *ModifySettin
 
 	delete(queryMap, "_setting")
 
-	if querySetting.Setting == nil {
-		querySetting.Setting = &ModifySetting{}
+	if modifySetting.Setting == nil {
+		modifySetting.Setting = &ModifySetting{}
 	}
 
 
@@ -174,7 +174,7 @@ func ParseWildQueryRequest(ctx *gin.Context) (map[string]interface{}, *WildQuery
 
 	delete(queryMap, "_setting")
 	if querySetting.Setting == nil {
-		querySetting.Setting = &WildQueryRequestSetting{}
+		querySetting.Setting = &WildQuerySetting{}
 	}
 
 	return queryMap, querySetting.Setting, nil

@@ -40,6 +40,10 @@ func (g *GoFileGenerator) write(file string, data []byte) error {
 	return os.WriteFile(fullPath, data, os.ModePerm)
 }
 
+func regularGoFileName(table string) string {
+	return strings.Trim(table, "_- ")
+}
+
 // GenerateRouter
 //
 //	@receiver g
@@ -53,7 +57,7 @@ func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[str
 		if err != nil {
 			return fmt.Errorf("render template table.tpl error: %v, database = %v | table = %s", err, dbName, table)
 		}
-		if err := g.write(filepath.Join("database", dbName, table+".go"), bytes); err != nil {
+		if err := g.write(filepath.Join("database", dbName, regularGoFileName(table)+".go"), bytes); err != nil {
 			return fmt.Errorf("generate table router %v error %v", table, err)
 		}
 	}
