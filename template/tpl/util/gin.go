@@ -58,6 +58,9 @@ func ParseQueryRequest(ctx *gin.Context) (map[string]interface{}, *QuerySetting,
 	}
 
 	delete(queryMap, "_setting")
+	if querySetting.Setting == nil {
+		querySetting.Setting = &QuerySetting{}
+	}
 	if querySetting.Setting.Limit < 1 {
 		querySetting.Setting.Limit = 200
 	}
@@ -99,6 +102,11 @@ func ParseModifyRequest(ctx *gin.Context) (map[string]interface{}, *ModifySettin
 
 	delete(queryMap, "_setting")
 
+	if querySetting.Setting == nil {
+		querySetting.Setting = &ModifySetting{}
+	}
+
+
 	return queryMap, modifySetting.Setting, nil
 }
 
@@ -134,6 +142,7 @@ type WildQuerySetting struct {
 	Limit   int64    `json:"limit"`
 	Fields  []string `json:"fields"`
 	GroupBy string   `json:"group_by"`
+	OrderBy string   `json:"order_by"`
 }
 
 type WildQueryRequestSetting struct {
@@ -164,6 +173,9 @@ func ParseWildQueryRequest(ctx *gin.Context) (map[string]interface{}, *WildQuery
 	}
 
 	delete(queryMap, "_setting")
+	if querySetting.Setting == nil {
+		querySetting.Setting = &WildQueryRequestSetting{}
+	}
 
 	return queryMap, querySetting.Setting, nil
 }

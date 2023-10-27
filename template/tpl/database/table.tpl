@@ -90,7 +90,7 @@ func Delete{{table_struct_name}}(ctx *gin.Context)  {
 }
 
 func WildQuery{{table_struct_name}}(ctx *gin.Context)  {
-     query, setting, err := util.ParseQueryRequest(ctx)
+     query, setting, err := util.ParseWildQueryRequest(ctx)
     if err != nil {
         util.Fail(ctx, err.Error())
         return

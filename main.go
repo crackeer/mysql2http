@@ -19,9 +19,6 @@ type Config struct {
 	CodeFolder string `json:"code_folder"`
 }
 
-var databases map[string]string = map[string]string{
-	"mysql2http": "root:1234567@tcp(127.0.0.1:3306)/mysql2http?charset=utf8&parseTime=True&loc=Local",
-}
 
 func parseConfig() (*Config, error) {
 	if len(os.Args) < 2 {

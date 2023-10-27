@@ -26,7 +26,8 @@ func (t *LocalTime) UnmarshalJSON(b []byte) error {
 	b = bytes.Trim(b, "\"") // 此除需要去掉传入的数据的两端的 ""
 	ext, err := time.Parse(t.UnmarshalTimeFormat(), string(b))
 	if err != nil {
-		return err
+		*t = LocalTime{time.Now()}
+		return nil
 	}
 	*t = LocalTime{ext}
 	return nil
