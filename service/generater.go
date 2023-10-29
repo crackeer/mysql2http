@@ -76,9 +76,10 @@ func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[str
 	return nil
 }
 
-func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}) error {
+func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}, port int) error {
 	bytes, err := template.Render("main.tpl", map[string]interface{}{
 		"databases": list,
+		"port":      port,
 	})
 	if err != nil {
 		return err

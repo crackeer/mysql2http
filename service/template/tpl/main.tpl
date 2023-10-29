@@ -10,7 +10,7 @@ import (
 )
 
 var (
-    port string = "8090"
+    port string = "{{port}}"
 )
 
 

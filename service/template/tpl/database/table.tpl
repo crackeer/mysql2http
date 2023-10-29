@@ -124,3 +124,15 @@ func WildQuery{{table_struct_name}}(ctx *gin.Context)  {
 
     util.Success(ctx, list)
 }
+
+func CreatSQL{{table_struct_name}}(ctx *gin.Context)  {
+    query, err := util.ParseDeleteRequest(ctx); 
+    if err != nil {
+        util.Fail(ctx, err.Error())
+        return
+    }
+    count := globalDB.Where(query).Delete(&{{table_struct_name}}{}).RowsAffected
+    util.Success(ctx, map[string]interface{}{
+        "affected_rows" : count,
+    })
+}

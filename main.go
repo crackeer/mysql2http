@@ -18,6 +18,7 @@ type Config struct {
 		Name string `json:"name"`
 		DSN  string `json:"dsn"`
 	} `json:"database"`
+	Port       int    `json:"port"`
 	CodeFolder string `json:"code_folder"`
 }
 
@@ -71,7 +72,7 @@ func main() {
 		})
 	}
 	generator.CopySomeFiles()
-	generator.GenMainGOFile(mainData)
+	generator.GenMainGOFile(mainData, cnf.Port)
 
 	compiler := service.NewCompiler(cnf.CodeFolder)
 	fmt.Println("Compiling...")
