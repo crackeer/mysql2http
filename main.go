@@ -6,19 +6,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/crackeer/mysql2http/compile"
 	"github.com/crackeer/mysql2http/database"
 	"github.com/crackeer/mysql2http/generator"
 )
 
 type Config struct {
-	Debug    bool `json:"debug"`
+	Debug    bool   `json:"debug"`
+	Target   string `json:"target"`
 	Database []struct {
 		Name string `json:"name"`
 		DSN  string `json:"dsn"`
 	} `json:"database"`
 	CodeFolder string `json:"code_folder"`
 }
-
 
 func parseConfig() (*Config, error) {
 	if len(os.Args) < 2 {
@@ -68,5 +69,12 @@ func main() {
 	}
 	generator.CopySomeFiles()
 	generator.GenMainGOFile(mainData)
+
+	comiler := compile.NewCompiler(cnf.CodeFolder)
+	if err := comiler.Prepare(); err != nil {
+		panic(err.Error())
+	}
+
+	comiler.Build(cnf.Target)
 
 }
