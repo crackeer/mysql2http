@@ -1,4 +1,4 @@
-package compile
+package service
 
 import (
 	"bufio"
@@ -24,7 +24,6 @@ func NewCompiler(codeDir string) *Compiler {
 
 func (c *Compiler) runCommand(cmd *exec.Cmd) error {
 	stdout, err := cmd.StdoutPipe()
-	fmt.Println(c.codeDir, cmd.String())
 	if err != nil {
 		fmt.Println("cmd.StdoutPipe: ", err)
 		return err

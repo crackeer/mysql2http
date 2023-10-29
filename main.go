@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/crackeer/mysql2http/compile"
-	"github.com/crackeer/mysql2http/database"
-	"github.com/crackeer/mysql2http/generator"
+	"github.com/crackeer/mysql2http/service"
+	"github.com/logrusorgru/aurora/v4"
 )
 
 type Config struct {
@@ -43,10 +43,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	os.RemoveAll(cnf.CodeFolder)
 
-	generator, err := generator.NewGoFileGenerator(cnf.CodeFolder)
+	generator, err := service.NewGoFileGenerator(cnf.CodeFolder)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -54,13 +53,17 @@ func main() {
 		defer os.RemoveAll(cnf.CodeFolder)
 	}
 	mainData := []map[string]interface{}{}
-	for _, item := range cnf.Database {
-		database, _ := database.NewDatabase(item.Name, item.DSN)
-		if err := database.Initialize(); err != nil {
+	for index, item := range cnf.Database {
+		fmt.Printf("> %d. %s->%s\n", index+1, aurora.Green(item.Name), aurora.Green(item.DSN))
+		database, err := service.NewDatabase(item.Name, item.DSN)
+		if err != nil {
 			panic(err.Error())
 		}
+		if err := database.Initialize(); err != nil {
+			panic(fmt.Sprintf("parse table failed: %v", err))
+		}
 		if err := generator.GenModelRouter(database.Name, item.DSN, database.BatchGenModelInput()); err != nil {
-			panic(err.Error())
+			panic(fmt.Sprintf("generate router failed: %v[db = %s]", err, item.Name))
 		}
 		mainData = append(mainData, map[string]interface{}{
 			"database": item.Name,
@@ -70,11 +73,18 @@ func main() {
 	generator.CopySomeFiles()
 	generator.GenMainGOFile(mainData)
 
-	comiler := compile.NewCompiler(cnf.CodeFolder)
-	if err := comiler.Prepare(); err != nil {
-		panic(err.Error())
+	compiler := service.NewCompiler(cnf.CodeFolder)
+	fmt.Println("Compiling...")
+	if err := compiler.Prepare(); err != nil {
+		panic(fmt.Sprintf("get output file error: %v", err))
+	}
+	target, err := filepath.Abs(cnf.Target)
+	if err != nil {
+		panic(fmt.Sprintf("get output file error: %v", err))
 	}
 
-	comiler.Build(cnf.Target)
-
+	if err := compiler.Build(target); err != nil {
+		panic(fmt.Sprintf("build error: %v", err))
+	}
+	fmt.Println(aurora.BrightYellow("We finished, the output file is: " + target))
 }

@@ -1,4 +1,4 @@
-package generator
+package service
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/crackeer/mysql2http/template"
+	"github.com/crackeer/mysql2http/service/template"
 )
 
 // GoFileGenerator
@@ -52,7 +52,9 @@ func regularGoFileName(table string) string {
 //	@param tableFields
 //	@return error
 func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[string]map[string]interface{}) error {
+	bar := NewProgressBar(len(tableFields), "generating routers")
 	for table, data := range tableFields {
+		bar.Add(1)
 		bytes, err := template.Render("database/table.tpl", data)
 		if err != nil {
 			return fmt.Errorf("render template table.tpl error: %v, database = %v | table = %s", err, dbName, table)
@@ -71,7 +73,6 @@ func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[str
 	if err := g.write(filepath.Join("database", dbName, "db.go"), bytes); err != nil {
 		return fmt.Errorf("generate %s / db.go error %v", dbName, err)
 	}
-
 	return nil
 }
 
@@ -90,7 +91,6 @@ func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}) error {
 
 func (g *GoFileGenerator) CopySomeFiles() error {
 	allFiles := template.ReadAllFileList()
-	fmt.Println(allFiles)
 	for _, item := range allFiles {
 		if strings.HasSuffix(item, ".go") || strings.HasSuffix(item, ".mod") {
 			bytes, err := template.Read(item)

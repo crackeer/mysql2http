@@ -1,7 +1,6 @@
-package database
+package service
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gookit/goutil/strutil"
@@ -42,9 +41,12 @@ func NewDatabase(name string, dsn string) (*Database, error) {
 }
 
 func (db *Database) Initialize() error {
-	for _, table := range db.Tables() {
+	tables := db.Tables()
+	bar := NewProgressBar(len(tables), "analyzing database tables")
+	for _, table := range tables {
 		fields, _ := db.Desc(table)
 		db.TableField[table] = fields
+		bar.Add(1)
 	}
 	return nil
 }
@@ -90,7 +92,6 @@ func (db *Database) Desc(table string) ([]TableField, error) {
 func (db *Database) BatchGenModelInput() map[string]map[string]interface{} {
 	tables := map[string]map[string]interface{}{}
 	for table, fields := range db.TableField {
-		fmt.Println(table, includeDateTime(fields))
 		tables[table] = map[string]interface{}{
 			"database":          db.Name,
 			"table":             table,
