@@ -77,7 +77,7 @@ func main() {
 	compiler := service.NewCompiler(cnf.CodeFolder)
 	fmt.Println("Compiling...")
 	if err := compiler.Prepare(); err != nil {
-		panic(fmt.Sprintf("get output file error: %v", err))
+		panic(fmt.Sprintf("go mod tidy error: %v", err))
 	}
 	target, err := filepath.Abs(cnf.Target)
 	if err != nil {
