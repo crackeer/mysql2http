@@ -13,6 +13,8 @@
     <div id="app"></div>
     <template id="template">
         <template v-if="manifest != null">
+            <h3>构建时间：「{{buildTime}}」</h3>
+            <hr />
             <div class="form-horizontal">
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">数据库</label>
@@ -117,6 +119,7 @@
                     tableList: [],
                     table: '',
                     createSQL: '',
+                    buildTime : ''
                 }
             },
             template: '#template',
@@ -133,6 +136,28 @@
                         this.table = this.tableList[0].table
                         this.createSQL = this.tableList[0].create_sql
                     }
+                    this.buildTime = this.toTime(this.manifest.time)
+                },
+                toTime(timestamp) {
+                    var date = new Date(timestamp * 1000);
+
+                    // 提取日期和时间信息  
+                    var year = date.getFullYear();
+                    var month = date.getMonth() + 1; // getMonth() 返回的月份是从0开始的，所以需要加1  
+                    var day = date.getDate();
+                    var hours = date.getHours();
+                    var minutes = date.getMinutes();
+                    var seconds = date.getSeconds();
+
+                    // 如果需要的话，可以将月份、日期、小时、分钟和秒数转换为两位数  
+                    month = month < 10 ? '0' + month : month;
+                    day = day < 10 ? '0' + day : day;
+                    hours = hours < 10 ? '0' + hours : hours;
+                    minutes = minutes < 10 ? '0' + minutes : minutes;
+                    seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                    // 组合成日期和时间字符串  
+                    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
                 }
             }
         })
