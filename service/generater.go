@@ -51,7 +51,7 @@ func regularGoFileName(table string) string {
 //	@param dsn
 //	@param tableFields
 //	@return error
-func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[string]map[string]interface{}) error {
+func (g *GoFileGenerator) GenModel(dbName, dsn string, tableFields map[string]map[string]interface{}) error {
 	bar := NewProgressBar(len(tableFields), "generating routers")
 	for table, data := range tableFields {
 		bar.Add(1)
@@ -93,7 +93,7 @@ func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}, port int)
 	return nil
 }
 
-func (g *GoFileGenerator) CopySomeFiles() error {
+func (g *GoFileGenerator) CopyOriginFiles() error {
 	allFiles := template.ReadAllFileList()
 	for _, item := range allFiles {
 		if strings.HasSuffix(item, ".go") || strings.HasSuffix(item, ".mod") {

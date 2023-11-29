@@ -50,9 +50,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if !cnf.Debug {
-		defer os.RemoveAll(cnf.CodeFolder)
-	}
+
 	mainData := []map[string]interface{}{}
 	for index, item := range cnf.Database {
 		fmt.Printf("> %d. %s->%s\n", index+1, aurora.Green(item.Name), aurora.Green(item.DSN))
@@ -63,7 +61,7 @@ func main() {
 		if err := database.Initialize(); err != nil {
 			panic(fmt.Sprintf("parse table failed: %v", err))
 		}
-		if err := generator.GenModelRouter(database.Name, item.DSN, database.BatchGenModelInput()); err != nil {
+		if err := generator.GenModel(database.Name, item.DSN, database.BatchGenModelInput()); err != nil {
 			panic(fmt.Sprintf("generate router failed: %v[db = %s]", err, item.Name))
 		}
 		mainData = append(mainData, map[string]interface{}{
@@ -71,9 +69,18 @@ func main() {
 			"dsn":      item.DSN,
 		})
 	}
-	generator.CopySomeFiles()
+	generator.CopyOriginFiles()
 	generator.GenContainer(mainData)
 	generator.GenMainGOFile(mainData, cnf.Port)
+
+	if len(cnf.Target) < 1 {
+		fmt.Println(aurora.BrightYellow("We finished, the output code folder is: " + cnf.CodeFolder))
+		return
+	}
+
+	if !cnf.Debug {
+		defer os.RemoveAll(cnf.CodeFolder)
+	}
 
 	compiler := service.NewCompiler(cnf.CodeFolder)
 	fmt.Println("Compiling...")
