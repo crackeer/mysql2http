@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/crackeer/mysql2http/service/template"
+	"github.com/crackeer/mysql2http/template"
 )
 
 // GoFileGenerator
