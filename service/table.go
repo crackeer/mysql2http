@@ -22,9 +22,10 @@ type TableField struct {
 type Database struct {
 	gormDB *gorm.DB
 
-	Name       string
-	DSN        string                  `json:"dsn"`
-	TableField map[string][]TableField `json:"tables"`
+	Name        string
+	DSN         string                  `json:"dsn"`
+	TableField  map[string][]TableField `json:"tables"`
+	CreateTable map[string]string
 }
 
 func NewDatabase(name string, dsn string) (*Database, error) {
@@ -33,19 +34,25 @@ func NewDatabase(name string, dsn string) (*Database, error) {
 		return nil, err
 	}
 	return &Database{
-		Name:       name,
-		gormDB:     db,
-		DSN:        dsn,
-		TableField: map[string][]TableField{},
+		Name:        name,
+		gormDB:      db,
+		DSN:         dsn,
+		TableField:  map[string][]TableField{},
+		CreateTable: map[string]string{},
 	}, nil
 }
 
+// Initialize
+//
+//	@receiver db
+//	@return error
 func (db *Database) Initialize() error {
 	tables := db.Tables()
 	bar := NewProgressBar(len(tables), "analyzing database tables")
 	for _, table := range tables {
 		fields, _ := db.Desc(table)
 		db.TableField[table] = fields
+		db.CreateTable[table], _ = db.ShowCreateTable(table)
 		bar.Add(1)
 	}
 	return nil
@@ -85,11 +92,32 @@ func (db *Database) Desc(table string) ([]TableField, error) {
 	return list, nil
 }
 
-// BatchGenModelInput
+// ShowCreateTable
+//
+//	@receiver db
+//	@param table
+//	@return string
+//	@return error
+func (db *Database) ShowCreateTable(table string) (string, error) {
+	data := map[string]interface{}{}
+	if err := db.gormDB.Raw("show create table  " + table).Scan(&data).Error; err != nil {
+		return "", err
+	}
+
+	if value, ok := data["Create Table"]; ok {
+		if stringValue, ok := value.(string); ok {
+			return stringValue, nil
+		}
+	}
+
+	return "", nil
+}
+
+// BatchGenModelData ...
 //
 //	@receiver db
 //	@return map
-func (db *Database) BatchGenModelInput() map[string]map[string]interface{} {
+func (db *Database) BatchGenModelData() map[string]map[string]interface{} {
 	tables := map[string]map[string]interface{}{}
 	for table, fields := range db.TableField {
 		tables[table] = map[string]interface{}{
@@ -103,15 +131,24 @@ func (db *Database) BatchGenModelInput() map[string]map[string]interface{} {
 	return tables
 }
 
-func (db *Database) GenMainRouterInput() []map[string]interface{} {
+// GenJSONData
+//
+//	@receiver db
+//	@return map
+func (db *Database) GenJSONData() map[string]interface{} {
+	retData := map[string]interface{}{
+		"database": db.Name,
+	}
 	tables := []map[string]interface{}{}
-	for table := range db.TableField {
+	for table, fields := range db.TableField {
 		tables = append(tables, map[string]interface{}{
-			"table":             table,
-			"table_struct_name": strutil.UpperFirst(strutil.Camel(table)),
+			"table":      table,
+			"fields":     fields,
+			"create_sql": db.CreateTable[table],
 		})
 	}
-	return tables
+	retData["table"] = tables
+	return retData
 }
 
 var typeTypeMapping map[string]string = map[string]string{

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/crackeer/mysql2http/service"
 	"github.com/logrusorgru/aurora/v4"
@@ -52,6 +53,8 @@ func main() {
 	}
 
 	mainData := []map[string]interface{}{}
+	databaseData := []map[string]interface{}{}
+	// ---> 生成数据库model文件
 	for index, item := range cnf.Database {
 		fmt.Printf("> %d. %s->%s\n", index+1, aurora.Green(item.Name), aurora.Green(item.DSN))
 		database, err := service.NewDatabase(item.Name, item.DSN)
@@ -61,17 +64,26 @@ func main() {
 		if err := database.Initialize(); err != nil {
 			panic(fmt.Sprintf("parse table failed: %v", err))
 		}
-		if err := generator.GenModel(database.Name, item.DSN, database.BatchGenModelInput()); err != nil {
+		if err := generator.GenModel(database.Name, item.DSN, database.BatchGenModelData()); err != nil {
 			panic(fmt.Sprintf("generate router failed: %v[db = %s]", err, item.Name))
 		}
 		mainData = append(mainData, map[string]interface{}{
 			"database": item.Name,
 			"dsn":      item.DSN,
 		})
+		databaseData = append(databaseData, database.GenJSONData())
 	}
+	// -> 复制不需要生成的文件（go/html/js/css/json/go.mod）
 	generator.CopyOriginFiles()
+	// ---> 生成container下的go文件
 	generator.GenContainer(mainData)
+	// ---> 生成main.go
 	generator.GenMainGOFile(mainData, cnf.Port)
+
+	generator.GenStaticJSON(map[string]interface{}{
+		"time":     time.Now().Unix(),
+		"database": databaseData,
+	})
 
 	if len(cnf.Target) < 1 {
 		fmt.Println(aurora.BrightYellow("We finished, the output code folder is: " + cnf.CodeFolder))

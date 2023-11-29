@@ -30,5 +30,6 @@ func main() {
     router.POST("/:database/:table/modify", handler.Modify)
     router.POST("/:database/:table/delete", handler.Delete)
     router.GET("/:database/:table/fields", handler.Fields)
+    router.NoRoute(handler.Default)
     router.Run(":" + port)
 }

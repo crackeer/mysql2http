@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -66,6 +67,11 @@ func (g *GoFileGenerator) GenModel(dbName, dsn string, tableFields map[string]ma
 	return nil
 }
 
+// GenContainer
+//
+//	@receiver g
+//	@param list
+//	@return error
 func (g *GoFileGenerator) GenContainer(list []map[string]interface{}) error {
 	bytes, err := template.Render("container/database.tpl", map[string]interface{}{
 		"databases": list,
@@ -96,7 +102,7 @@ func (g *GoFileGenerator) GenMainGOFile(list []map[string]interface{}, port int)
 func (g *GoFileGenerator) CopyOriginFiles() error {
 	allFiles := template.ReadAllFileList()
 	for _, item := range allFiles {
-		if strings.HasSuffix(item, ".go") || strings.HasSuffix(item, ".mod") {
+		if strings.HasSuffix(item, ".go") || strings.HasSuffix(item, ".mod") || strings.HasSuffix(item, ".html") || strings.HasSuffix(item, ".js") || strings.HasSuffix(item, ".css") || strings.HasSuffix(item, ".json") {
 			bytes, err := template.Read(item)
 			if err != nil {
 				continue
@@ -112,4 +118,14 @@ func (g *GoFileGenerator) CopyOriginFiles() error {
 		}
 	}
 	return nil
+}
+
+// GenStaticJSON
+//
+//	@receiver g
+//	@param data
+//	@return error
+func (g *GoFileGenerator) GenStaticJSON(data map[string]interface{}) error {
+	bytes, _ := json.Marshal(data)
+	return g.write("handler/static/manifest.json", bytes)
 }
