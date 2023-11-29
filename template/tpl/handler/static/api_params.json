@@ -1,0 +1,25 @@
+{
+    "query" : {
+        "field1" : "value1",
+        "like@field2" : "like",
+        "lt@id" : 77,
+        "_setting" : {
+            "order_by" : "id desc",
+            "limit" : 1000
+        } 
+    },
+    "modify" : {
+        "field1" : "value1",
+        "field2" : "value1",
+        "_where" : {
+            "id" : 777
+        }
+    },
+    "delete" : {
+        "field1" : "value1"
+    },
+    "create" : {
+        "field1" : "value1",
+        "field2" : "value2"
+    }
+}

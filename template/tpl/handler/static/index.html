@@ -44,7 +44,7 @@
                         <h4 class="panel-title">
                             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
                                 aria-expanded="true" aria-controls="collapseOne">
-                                <span class="label label-default">POST</span> /{{database}}/{{table}}/query
+                                <span class="label label-default">POST</span> <span class="label label-info">application/json</span> /{{database}}/{{table}}/query
                             </a>
                         </h4>
                     </div>
@@ -61,7 +61,7 @@
                         <h4 class="panel-title">
                             <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                 href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                                <span class="label label-default">POST</span> /{{database}}/{{table}}/create
+                                <span class="label label-default">POST</span> <span class="label label-info">application/json</span> /{{database}}/{{table}}/create 
                             </a>
                         </h4>
                     </div>
@@ -77,7 +77,7 @@
                         <h4 class="panel-title">
                             <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                 href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                                <span class="label label-default">POST</span> /{{database}}/{{table}}/modify
+                                <span class="label label-default">POST</span> <span class="label label-info">application/json</span> /{{database}}/{{table}}/modify
                             </a>
                         </h4>
                     </div>
@@ -94,7 +94,7 @@
                         <h4 class="panel-title">
                             <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                 href="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
-                                <span class="label label-default">POST</span> /{{database}}/{{table}}/delete
+                                <span class="label label-default">POST</span>  <span class="label label-info">application/json</span> /{{database}}/{{table}}/delete
                             </a>
                         </h4>
                     </div>
@@ -119,12 +119,14 @@
                     tableList: [],
                     table: '',
                     createSQL: '',
-                    buildTime: ''
+                    buildTime: '',
+                    apiParams: {},
                 }
             },
             template: '#template',
             async mounted() {
-                this.getManifest()
+                await this.getManifest()
+                await this.getAPIParams()
                 this.batchInitJSONEditor()
             },
             methods: {
@@ -138,6 +140,10 @@
                         this.createSQL = this.tableList[0].create_sql
                     }
                     this.buildTime = this.toTime(this.manifest.time)
+                },
+                async getAPIParams() {
+                    let result = await axios.get('/api_params.json')
+                    this.apiParams = result.data
                 },
                 toTime(timestamp) {
                     var date = new Date(timestamp * 1000);
@@ -162,10 +168,10 @@
                 },
                 batchInitJSONEditor() {
                     setTimeout(() => {
-                        initJSONEditor('jsoneditor1', '{}')
-                        initJSONEditor('jsoneditor2', '{}')
-                        initJSONEditor('jsoneditor3', '{}')
-                        initJSONEditor('jsoneditor4', '{}')
+                        initJSONEditor('jsoneditor1', JSON.stringify(this.apiParams.query))
+                        initJSONEditor('jsoneditor2', JSON.stringify(this.apiParams.create))
+                        initJSONEditor('jsoneditor3', JSON.stringify(this.apiParams.modify))
+                        initJSONEditor('jsoneditor4', JSON.stringify(this.apiParams.delete))
                         $('.collapse').collapse()
                     }, 100)
                 }
