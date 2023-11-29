@@ -63,15 +63,18 @@ func (g *GoFileGenerator) GenModelRouter(dbName, dsn string, tableFields map[str
 			return fmt.Errorf("generate table router %v error %v", table, err)
 		}
 	}
-	bytes, err := template.Render("database/db.tpl", map[string]interface{}{
-		"dsn":      dsn,
-		"database": dbName,
+	return nil
+}
+
+func (g *GoFileGenerator) GenContainer(list []map[string]interface{}) error {
+	bytes, err := template.Render("container/database.tpl", map[string]interface{}{
+		"databases": list,
 	})
 	if err != nil {
 		return err
 	}
-	if err := g.write(filepath.Join("database", dbName, "db.go"), bytes); err != nil {
-		return fmt.Errorf("generate %s / db.go error %v", dbName, err)
+	if err := g.write(filepath.Join("container/database.go"), bytes); err != nil {
+		return fmt.Errorf("generate main.go error %v", err)
 	}
 	return nil
 }

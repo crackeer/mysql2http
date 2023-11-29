@@ -68,10 +68,11 @@ func main() {
 		}
 		mainData = append(mainData, map[string]interface{}{
 			"database": item.Name,
-			"tables":   database.GenMainRouterInput(),
+			"dsn":      item.DSN,
 		})
 	}
 	generator.CopySomeFiles()
+	generator.GenContainer(mainData)
 	generator.GenMainGOFile(mainData, cnf.Port)
 
 	compiler := service.NewCompiler(cnf.CodeFolder)
