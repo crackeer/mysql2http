@@ -1,11 +1,13 @@
 
 var styleFiles = [
     "/bootstrap.css",
+    "/jsoneditor.css"
 ]
 var jsFile1 = [
     "/jquery.js",
     "/vue.global.js",
-    "/axios.js"
+    "/axios.js",
+    "/jsoneditor.js"
 ]
 var jsFile2 = [
     "/bootstrap.js",
@@ -65,4 +67,20 @@ function sleep(time) {
             resolve();
         }, time);
     });
+}
+
+function initJSONEditor(target, value) {
+    let jsonEditor = 'jsonEditor-' + target
+    if (window[jsonEditor] == undefined) {
+        window[jsonEditor] = new JSONEditor(document.getElementById(target), {
+            "mode": "code",
+            "search": true,
+            "indentation": 4
+        })
+    }
+    try {
+        let jsonValue = JSON.parse(value)
+        window[jsonEditor].set(jsonValue)
+    } catch (e) {
+    }
 }
